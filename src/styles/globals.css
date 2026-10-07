@@ -1,0 +1,241 @@
+/* Mausam Weather Application - Modern Vanilla CSS Design System */
+
+:root {
+  /* Color Palette - Dark Mode (Default) */
+  --bg-primary: #0a0f1e;
+  --bg-secondary: #111a2f;
+  --bg-tertiary: #18233e;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-cyan: #00d2ff;
+  --accent-blue: #3b82f6;
+  --accent-indigo: #6366f1;
+  --accent-amber: #f59e0b;
+  --accent-emerald: #10b981;
+
+  --alert-critical: #ef4444;
+  --alert-warning: #f97316;
+  --alert-advisory: #eab308;
+  --alert-info: #3b82f6;
+
+  /* Glassmorphism & Borders */
+  --card-bg: rgba(18, 28, 52, 0.72);
+  --card-bg-hover: rgba(26, 39, 70, 0.85);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-glow: rgba(0, 210, 255, 0.25);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+  --card-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+
+  /* Gradients */
+  --grad-sky: linear-gradient(135deg, #0a1128 0%, #101f42 50%, #0d2847 100%);
+  --grad-primary: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  --grad-sunset: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  --grad-rain: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+
+  /* Transitions & Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Sizing */
+  --sidebar-width: 260px;
+  --bottom-nav-height: 68px;
+  --header-height: 72px;
+}
+
+/* Light Mode Overrides */
+[data-theme='light'] {
+  --bg-primary: #f0f6fc;
+  --bg-secondary: #e2ecf9;
+  --bg-tertiary: #d2e3f7;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --card-bg: rgba(255, 255, 255, 0.82);
+  --card-bg-hover: rgba(255, 255, 255, 0.95);
+  --card-border: rgba(148, 163, 184, 0.22);
+  --card-border-glow: rgba(0, 163, 255, 0.3);
+  --card-shadow: 0 8px 30px 0 rgba(30, 58, 138, 0.08);
+  --card-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+
+  --grad-sky: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #e0f7fa 100%);
+}
+
+/* Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  background-image: var(--grad-sky);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Layout Framework */
+.mausam-app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  background: transparent;
+}
+
+.mausam-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: calc(var(--bottom-nav-height) + 20px);
+}
+
+@media (min-width: 1024px) {
+  .mausam-main-content {
+    margin-left: var(--sidebar-width);
+    padding-bottom: 40px;
+  }
+}
+
+.dashboard-page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px 24px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-page-container {
+    padding: 0 28px 36px;
+  }
+}
+
+/* Glass Card Baseline */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow), var(--card-inner-glow);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card:hover {
+  border-color: var(--card-border-glow);
+}
+
+/* Grid Systems */
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid-two-col {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dashboard-col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-anim {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

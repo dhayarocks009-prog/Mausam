@@ -1,0 +1,128 @@
+# Implementation Plan: Authentication & Parent/Guardian Emergency Weather Alert System
+
+Add user authentication (Mobile Number / Email ID, live active user count, and user profile) alongside a complete **Parent/Guardian Emergency Weather Alert System** to Mausam without modifying or breaking any existing weather features.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Emergency Notification Dispatch (`/api/emergency/alert`):** To protect API credentials and satisfy requirement #4 ("Never expose API keys, authentication tokens, or secret credentials in frontend code"), emergency alerts and SMS notifications are processed through a server-side route. It integrates SMS dispatch simulation with live status tracking (`Alert Sent ✓`, `Cooldown Active`, `Alert Failed ✕`) and supports external SMS providers (Twilio) via server environment variables (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`).
+
+> [!NOTE]
+> **Preserving Existing Features:** All current weather capabilities (30-minute auto caching, rain histogram, 24h & 7-day forecasts, radar map, favorite locations, and unit settings) remain 100% intact and operational.
+
+---
+
+## Proposed Changes
+
+### Data Types & Models
+
+#### [NEW] [src/types/auth.ts](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/types/auth.ts)
+- `UserProfile`: ID, name, email, mobile, createdAt, emergencyContact, lastLogin.
+- `EmergencyContact`: id, guardianName, guardianPhone, relationship, alertsEnabled, lastAlertSentAt, alertHistory.
+- `EmergencyAlertPayload`: userId, userName, guardianPhone, weatherEvent, location, timestamp, isTest, userConfirmed.
+- `EmergencyAlertResult`: status (`sent` | `failed` | `cooldown` | `waiting`), message, timestamp, deliveryId.
+
+---
+
+### Backend API Routes
+
+#### [NEW] [src/app/api/auth/route.ts](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/app/api/auth/route.ts)
+- Login endpoint supporting either Mobile Number or Email ID along with User Name.
+- Live active user session tracker providing accurate **Logged-in User Count**.
+- Profile retrieval and update endpoints.
+
+#### [NEW] [src/app/api/emergency/alert/route.ts](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/app/api/emergency/alert/route.ts)
+- Secure backend alert dispatch.
+- **Anti-spam & Cooldown Engine:** Prevents duplicate alerts for the same event within 15 minutes.
+- Formats standard emergency message:
+  *“Emergency Weather Alert! [User Name] is currently affected by a severe weather condition: [Weather Alert] in [Location]. Please contact them and check whether they are safe. Alert time: [Time].”*
+- Supports real Twilio credentials (if provided in env) or high-fidelity simulated SMS delivery with delivery status receipt (`Alert Sent ✓`).
+
+---
+
+### State Management & Context
+
+#### [NEW] [src/context/AuthEmergencyContext.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/context/AuthEmergencyContext.tsx)
+- Manages user login state, active user count, emergency contact details, alert history, and trigger state.
+- Automatically listens to weather alerts from `WeatherContext`:
+  - When severe alert triggers (cyclone, heavy rain, severe thunderstorm, extreme heat), activates the Emergency Alert Prompt.
+- Provides actions: `login()`, `logout()`, `saveEmergencyContact()`, `deleteEmergencyContact()`, `toggleEmergencyAlerts()`, `sendEmergencyAlert()`, `sendTestAlert()`.
+
+---
+
+### UI Components
+
+#### [NEW] [src/components/Auth/LoginModal.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Auth/LoginModal.tsx)
+- Dedicated login dialog allowing login via:
+  - Mobile number (`+91 ...`) OR Email ID (`user@example.com`)
+  - User Name
+- Displays current active user count badge (*"👥 142 Active Weather Watchers Online"*).
+
+#### [NEW] [src/components/Emergency/EmergencyContactCard.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Emergency/EmergencyContactCard.tsx)
+- Clean card for dashboard and settings:
+  - 👤 Guardian Name
+  - 📱 Guardian Phone (masked for privacy: `+91 ••••• ••123`)
+  - 🔔 Emergency Alerts: ON / OFF
+  - Buttons: **Edit Contact**, **Test Alert**, **Disable Alerts**.
+  - Status indicator: `Alert Sent ✓`, `Waiting for Confirmation`.
+
+#### [NEW] [src/components/Emergency/EmergencyAlertModal.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Emergency/EmergencyAlertModal.tsx)
+- High-visibility emergency confirmation modal triggered during severe weather:
+  - Prominent red warning banner.
+  - Emergency description & safety instructions.
+  - Preview of SMS to be sent to parent/guardian.
+  - **"Alert Parent/Guardian Now"** confirmation button.
+  - Live delivery status feedback.
+
+#### [NEW] [src/components/Emergency/EmergencyContactEditModal.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Emergency/EmergencyContactEditModal.tsx)
+- Modal for adding or editing parent/guardian details:
+  - Name, Phone number, Relationship dropdown (Mother, Father, Guardian, Spouse, Other).
+  - Clear privacy disclaimer regarding location sharing and SMS dispatch.
+
+---
+
+### Integration & View Updates
+
+#### [MODIFY] [src/components/Header/Header.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Header/Header.tsx)
+- Display logged-in user name & avatar chip.
+- Display live active user count badge (`👥 142 Online`).
+- Login/Profile trigger button.
+
+#### [MODIFY] [src/components/Navigation/Sidebar.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Navigation/Sidebar.tsx)
+- User profile card in sidebar with login/logout action.
+- Live active user count.
+
+#### [MODIFY] [src/components/Dashboard/HomeDashboard.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Dashboard/HomeDashboard.tsx)
+- Integrate Emergency Contact status card and active emergency banner when severe weather occurs.
+
+#### [MODIFY] [src/components/Settings/SettingsView.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/components/Settings/SettingsView.tsx)
+- Include the Emergency Contact management section directly in settings.
+
+#### [MODIFY] [src/app/page.tsx](file:///c:/Users/dhaya/OneDrive/Desktop/app/src/app/page.tsx)
+- Wrap application with `<AuthEmergencyProvider>`.
+- Include `<EmergencyAlertModal />`, `<LoginModal />`, and `<EmergencyContactEditModal />`.
+
+---
+
+## Verification Plan
+
+### Automated Build & TypeScript Verification
+- Run `npm.cmd run build` to confirm zero compilation errors across Next.js API routes and React components.
+
+### Functional Verification
+1. **Authentication Flow:**
+   - Test login with email (`dhayanidhi@example.com`) and mobile (`+91 98765 43210`).
+   - Verify user name appears in Header and Sidebar.
+   - Verify live active user count displays accurately.
+2. **Emergency Contact Management:**
+   - Add a Parent/Guardian contact (e.g. "Arun Kumar", "+91 98765 12345", "Father").
+   - Test editing, toggling alerts ON/OFF, and deleting.
+3. **Test Alert Feature:**
+   - Click "Test Alert", verify SMS test dispatch payload, delivery receipt `Alert Sent ✓`, and timestamp logging.
+4. **Severe Weather Emergency Alert:**
+   - Trigger emergency alert flow on severe weather condition.
+   - Verify emergency modal opens with clear description and safety instructions.
+   - Confirm alert dispatch and verify anti-spam cooldown prevents duplicate spamming within the cooldown window.
+5. **Privacy Safeguards:**
+   - Confirm phone numbers are masked in the UI.
+   - Confirm location sharing requires user confirmation before sending.
